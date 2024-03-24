@@ -13,9 +13,11 @@ type Handler struct {
 func NewHandler(services *service.Service) *Handler {
 	return &Handler{services: services}
 }
+
 func (h *Handler) InitRoutes() *mux.Router {
 	m := mux.NewRouter()
 	m.HandleFunc("/api/auth/sign-up", h.signUp)
 	m.HandleFunc("/api/auth/sign-in", h.signIn)
+	m.HandleFunc("/api/create-selling", h.AuthMiddleware(h.createSellinglist))
 	return m
 }

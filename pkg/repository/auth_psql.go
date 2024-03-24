@@ -32,5 +32,4 @@ func (r *AuthPostgres) SignUser(username, password string) (selling.User, error)
 	res := r.pg.QueryRow(context.Background(), query, username, password)
 	err := res.Scan(&user.Id, &user.Username, &user.Password)
 	return user, err
-
 }
