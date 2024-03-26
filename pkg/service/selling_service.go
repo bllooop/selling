@@ -17,6 +17,6 @@ func (s *SellingService) CreateSelling(userId int, list selling.SellingList) (se
 	return s.repo.CreateSelling(userId, list)
 }
 
-func (s *SellingService) ListSellings(userId int, order string) ([]selling.SellingList, error) {
-	return s.repo.ListSellings(userId, order)
+func (s *SellingService) ListSellings(userId int, order string, page int) (map[string]interface{}, error) {
+	return s.repo.ListSellings(userId, order, page)
 }

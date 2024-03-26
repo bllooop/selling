@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"selling"
+	"strconv"
 )
 
 func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
@@ -36,17 +37,20 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) getAllSelling(w http.ResponseWriter, r *http.Request) {
+	order := r.URL.Query().Get("order")
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if r.URL.Path != "/api/movies" {
 		notFound(w)
 		return
 	}
-	order := r.URL.Query().Get("order")
-	retrievedValue := r.Context().Value(idCtx).(int)
-	lists, err := h.services.ListSellings(retrievedValue, order)
 	if err != nil {
 		servErr(w, err, err.Error())
 	}
-
+	retrievedValue := r.Context().Value(idCtx).(int)
+	lists, err := h.services.ListSellings(retrievedValue, order, page)
+	if err != nil {
+		servErr(w, err, err.Error())
+	}
 	res, err := JSONStruct(lists)
 	if err != nil {
 		servErr(w, err, err.Error())

@@ -13,7 +13,7 @@ type Authorization interface {
 
 type Selling interface {
 	CreateSelling(userId int, list selling.SellingList) (selling.SellingList, error)
-	ListSellings(userId int, order string) ([]selling.SellingList, error)
+	ListSellings(userId int, order string, page int) (map[string]interface{}, error)
 }
 
 type Service struct {
