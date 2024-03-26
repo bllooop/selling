@@ -13,8 +13,7 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 		clientErr(w, http.StatusMethodNotAllowed, "only post method allowed")
 		return
 	}
-	//retrievedValue := "1" // when testing uncomment
-	retrievedValue := r.Context().Value(idCtx).(int) // when testing comment
+	retrievedValue := r.Context().Value(idCtx).(int)
 	var input selling.SellingList
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil || input.Title == "" || input.Description == "" || input.Price == 0 || input.PicURL == "" {
@@ -30,6 +29,25 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 	res, err := JSONStruct(map[string]interface{}{
 		"id": id,
 	})
+	if err != nil {
+		servErr(w, err, err.Error())
+	}
+	fmt.Fprintf(w, "%v", res)
+}
+
+func (h *Handler) getAllSelling(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/api/movies" {
+		notFound(w)
+		return
+	}
+	order := r.URL.Query().Get("order")
+	retrievedValue := r.Context().Value(idCtx).(int)
+	lists, err := h.services.ListSellings(retrievedValue, order)
+	if err != nil {
+		servErr(w, err, err.Error())
+	}
+
+	res, err := JSONStruct(lists)
 	if err != nil {
 		servErr(w, err, err.Error())
 	}

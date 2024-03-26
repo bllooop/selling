@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	userListTable        = "userlist"
-	sellingListTable     = "sellinglist"
-	sellingItemTable     = "sellingitem"
-	sellingListItemTable = "sellinglistitem"
+	userListTable    = "userlist"
+	sellingListTable = "sellinglist"
+	userSellingTable = "usersellingtable"
 )
 
 const (

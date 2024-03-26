@@ -21,8 +21,8 @@ func (r *SellingPostgres) CreateSelling(userId int, list selling.SellingList) (s
 	if err != nil {
 		return listres, err
 	}
-	createListQuery := fmt.Sprintf("INSERT INTO %s (title, description, date, description, url, price) VALUES ($1,$2.$3,$4,$5,$6) RETURNING *", sellingListTable)
-	row := tr.QueryRow(context.Background(), createListQuery, list.Title, list.Description, list.Date, list.PicURL, list.Price)
+	createListQuery := fmt.Sprintf("INSERT INTO %s (title, date, description, url, price) VALUES ($1,$2.$3,$4,$5) RETURNING *", sellingListTable)
+	row := tr.QueryRow(context.Background(), createListQuery, list.Title, list.Date, list.Description, list.PicURL, list.Price)
 	if err := row.Scan(&listres.Id, &listres.Title, &listres.Description, &listres.Date, &listres.PicURL, &listres.Price); err != nil {
 		tr.Rollback(context.Background())
 		return listres, err
@@ -37,8 +37,14 @@ func (r *SellingPostgres) CreateSelling(userId int, list selling.SellingList) (s
 }
 func (r *SellingPostgres) ListSellings(userId int, order string) ([]selling.SellingList, error) {
 	var lists []selling.SellingList
-	query := fmt.Sprintf("SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id",
-		sellingListTable, userListTable)
+	query := ""
+	if userId != 0 {
+		query = fmt.Sprintf("SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.id (where ul.id is not null)  FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id",
+			sellingListTable, userListTable)
+	} else {
+		query = fmt.Sprintf("SELECT id, title, description, date, url, price FROM %s",
+			sellingListTable)
+	}
 	row, err := r.pg.Query(context.Background(), query, userId)
 	if err != nil {
 		return nil, err
