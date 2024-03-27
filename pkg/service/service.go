@@ -6,14 +6,14 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user selling.User) (int, error)
+	CreateUser(user selling.User) (selling.User, error)
 	CreateToken(username, password string) (string, error)
-	ParseToken(accesstok string) (string, error)
+	ParseToken(accesstok string) (int, error)
 }
 
 type Selling interface {
 	CreateSelling(userId int, list selling.SellingList) (selling.SellingList, error)
-	ListSellings(userId int, order string, page int) (map[string]interface{}, error)
+	ListSellings(userId int, order, sortby string, page int) (map[string]interface{}, error)
 }
 
 type Service struct {

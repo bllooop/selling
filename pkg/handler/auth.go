@@ -32,14 +32,12 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 		clientErr(w, http.StatusBadRequest, "invalid input body")
 		return
 	}
-	id, err := h.services.Authorization.CreateUser(input)
+	list, err := h.services.Authorization.CreateUser(input)
 	if err != nil {
 		servErr(w, err, err.Error())
 		return
 	}
-	res, err := JSONStruct(map[string]interface{}{
-		"id": id,
-	})
+	res, err := JSONStruct(list)
 	if err != nil {
 		servErr(w, err, err.Error())
 		return

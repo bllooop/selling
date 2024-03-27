@@ -17,19 +17,16 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 	retrievedValue := r.Context().Value(idCtx).(int)
 	var input selling.SellingList
 	err := json.NewDecoder(r.Body).Decode(&input)
-	if err != nil || input.Title == "" || input.Description == "" || input.Price == 0 || input.PicURL == "" {
+	if err != nil {
 		clientErr(w, http.StatusBadRequest, "invalid input body")
 		return
 	}
-
-	id, err := h.services.Selling.CreateSelling(retrievedValue, input)
+	sell, err := h.services.Selling.CreateSelling(retrievedValue, input)
 	if err != nil {
 		servErr(w, err, err.Error())
 		return
 	}
-	res, err := JSONStruct(map[string]interface{}{
-		"id": id,
-	})
+	res, err := JSONStruct(sell)
 	if err != nil {
 		servErr(w, err, err.Error())
 	}
@@ -38,8 +35,17 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) getAllSelling(w http.ResponseWriter, r *http.Request) {
 	order := r.URL.Query().Get("order")
+	sortby := r.URL.Query().Get("sortby")
+	if sortby == "" && order == "" {
+		clientErr(w, http.StatusBadRequest, "invalid sortby or order value")
+		return
+	}
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if r.URL.Path != "/api/movies" {
+	if err != nil {
+		clientErr(w, http.StatusBadRequest, "invalid page value")
+		return
+	}
+	if r.URL.Path != "/api/sellings" {
 		notFound(w)
 		return
 	}
@@ -47,7 +53,7 @@ func (h *Handler) getAllSelling(w http.ResponseWriter, r *http.Request) {
 		servErr(w, err, err.Error())
 	}
 	retrievedValue := r.Context().Value(idCtx).(int)
-	lists, err := h.services.ListSellings(retrievedValue, order, page)
+	lists, err := h.services.ListSellings(retrievedValue, order, sortby, page)
 	if err != nil {
 		servErr(w, err, err.Error())
 	}

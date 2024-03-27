@@ -7,12 +7,12 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user selling.User) (int, error)
+	CreateUser(user selling.User) (selling.User, error)
 	SignUser(username, password string) (selling.User, error)
 }
 type Selling interface {
 	CreateSelling(userId int, list selling.SellingList) (selling.SellingList, error)
-	ListSellings(userId int, order string, page int) (map[string]interface{}, error)
+	ListSellings(userId int, order, sortby string, page int) (map[string]interface{}, error)
 }
 
 type Repository struct {

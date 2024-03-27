@@ -9,6 +9,16 @@ type SellingList struct {
 	PicURL      string      `json:"url"  db:"url"`
 	Price       int         `json:"price" db:"price"`
 	Date        pgtype.Date `json:"date"`
+	UserLogin   string      `json:"user_created,omitempty"`
+}
+
+type SellingListUnathorized struct {
+	Id          int         `json:"id"`
+	Title       string      `json:"title" binding:"required"`
+	Description string      `json:"description" db:"description"`
+	PicURL      string      `json:"url"  db:"url"`
+	Price       int         `json:"price" db:"price"`
+	Date        pgtype.Date `json:"date"`
 }
 
 /*type SellListsItem struct {

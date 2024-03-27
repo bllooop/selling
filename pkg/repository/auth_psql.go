@@ -16,19 +16,19 @@ func NewAuthPostgres(pg *pgxpool.Pool) *AuthPostgres {
 	return &AuthPostgres{pg: pg}
 }
 
-func (r *AuthPostgres) CreateUser(user selling.User) (int, error) {
-	var id int
-	query := fmt.Sprintf(`INSERT INTO %s (username,password) VALUES ($1,$2,$3) RETURNING id`, userListTable)
-	row := r.pg.QueryRow(context.Background(), query)
-	if err := row.Scan(&id); err != nil {
-		return 0, err
+func (r *AuthPostgres) CreateUser(user selling.User) (selling.User, error) {
+	var res selling.User
+	query := fmt.Sprintf(`INSERT INTO %s (username,password) VALUES ($1,$2) RETURNING *`, userListTable)
+	row := r.pg.QueryRow(context.Background(), query, user.Username, user.Password)
+	if err := row.Scan(&res.Id, &res.Username, &res.Password); err != nil {
+		return res, err
 	}
-	return id, nil
+	return res, nil
 
 }
 func (r *AuthPostgres) SignUser(username, password string) (selling.User, error) {
 	var user selling.User
-	query := fmt.Sprintf(`SELECT id,username,password,role FROM %s WHERE username=$1 AND password=$2`, userListTable)
+	query := fmt.Sprintf(`SELECT id,username,password FROM %s WHERE username=$1 AND password=$2`, userListTable)
 	res := r.pg.QueryRow(context.Background(), query, username, password)
 	err := res.Scan(&user.Id, &user.Username, &user.Password)
 	return user, err

@@ -18,6 +18,7 @@ func (h *Handler) InitRoutes() *mux.Router {
 	m := mux.NewRouter()
 	m.HandleFunc("/api/auth/sign-up", h.signUp)
 	m.HandleFunc("/api/auth/sign-in", h.signIn)
-	m.HandleFunc("/api/create-selling", h.AuthMiddleware(h.createSellinglist))
+	m.HandleFunc("/api/create-selling", h.AuthMiddleware(h.createSellinglist, "create-selling"))
+	m.HandleFunc("/api/sellings", h.AuthMiddleware(h.getAllSelling, "sellings"))
 	return m
 }

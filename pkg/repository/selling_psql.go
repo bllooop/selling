@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"selling"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,41 +29,54 @@ func (r *SellingPostgres) CreateSelling(userId int, list selling.SellingList) (s
 	if err != nil {
 		return listres, err
 	}
-	createListQuery := fmt.Sprintf("INSERT INTO %s (title, date, description, url, price) VALUES ($1,$2.$3,$4,$5) RETURNING *", sellingListTable)
-	row := tr.QueryRow(context.Background(), createListQuery, list.Title, list.Date, list.Description, list.PicURL, list.Price)
-	if err := row.Scan(&listres.Id, &listres.Title, &listres.Description, &listres.Date, &listres.PicURL, &listres.Price); err != nil {
+	createListQuery := fmt.Sprintf("INSERT INTO %s (title, date, description, url, price) VALUES ($1,$2,$3,$4,$5) RETURNING *", sellingListTable)
+	row := tr.QueryRow(context.Background(), createListQuery, list.Title, time.Now(), list.Description, list.PicURL, list.Price)
+	if err := row.Scan(&listres.Id, &listres.Title, &listres.Price, &listres.Date, &listres.Description, &listres.PicURL); err != nil {
 		tr.Rollback(context.Background())
 		return listres, err
 	}
-	createUserListQuery := fmt.Sprintf("INSERT INTO %s (user_id, list_id) VALUES ($1,$2)", userListTable)
-	_, err = tr.Exec(context.Background(), createUserListQuery, userId, listres.Id)
+	var username string
+	loginQuery := fmt.Sprintf("SELECT username FROM %s WHERE id=$1", userListTable)
+	row = tr.QueryRow(context.Background(), loginQuery, userId)
+	if err := row.Scan(&username); err != nil {
+		tr.Rollback(context.Background())
+		return listres, err
+	}
+	createUserListQuery := fmt.Sprintf("INSERT INTO %s (user_login, user_id, list_id) VALUES ($1,$2,$3)", userSellingTable)
+	_, err = tr.Exec(context.Background(), createUserListQuery, username, userId, listres.Id)
 	if err != nil {
 		tr.Rollback(context.Background())
 		return listres, err
 	}
 	return listres, tr.Commit(context.Background())
 }
-func (r *SellingPostgres) ListSellings(userId int, order string, page int) (map[string]interface{}, error) {
+func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page int) (map[string]interface{}, error) {
 	data := map[string]interface{}{}
 	limit := 10
 	offset := limit * (page - 1)
 	data["Page"] = r.pagination("users", limit, page)
 	var lists []selling.SellingList
 	query := ""
-	if userId != 0 {
-		query = fmt.Sprintf("SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.id (where ul.id is not null)  FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id WHERE ul.user_id=$1 ORDER BY %s desc limit %d offset %d", sellingListTable, userListTable, order, limit, offset)
+	if userId == 0 {
+		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
+		ORDER BY %s %s limit %d offset %d`, sellingListTable, userSellingTable, order, sortby, limit, offset)
 	} else {
-		query = fmt.Sprintf("SELECT id, title, description, date, url, price FROM %s ORDER BY %s desc limit %d offset %d",
-			sellingListTable, order, limit, offset)
+		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
+		WHERE ul.user_id=%d ORDER BY %s %s limit %d offset %d`, sellingListTable, userSellingTable, userId, order, sortby, limit, offset)
 	}
-	row, err := r.pg.Query(context.Background(), query, userId)
+	row, err := r.pg.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
 	defer row.Close()
 	for row.Next() {
+		var err error
 		k := selling.SellingList{}
-		err := row.Scan(&k.Id, &k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price)
+		if userId == 0 {
+			err = row.Scan(&k.Id, &k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price, &k.UserLogin)
+		} else {
+			err = row.Scan(&k.Id, &k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price, &k.UserLogin)
+		}
 		if err != nil {
 			return nil, err
 		}
