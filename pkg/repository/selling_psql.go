@@ -58,12 +58,20 @@ func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page in
 	var lists []selling.SellingList
 	query := ""
 	if userId == 0 {
-		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
+		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login 
+		FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
 		ORDER BY %s %s limit %d offset %d`, sellingListTable, userSellingTable, order, sortby, limit, offset)
 	} else {
-		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
-		WHERE ul.user_id=%d ORDER BY %s %s limit %d offset %d`, sellingListTable, userSellingTable, userId, order, sortby, limit, offset)
+		query = fmt.Sprintf(`SELECT  sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login,
+		sl.id,
+		CASE 
+        WHEN ul.user_id=%d  THEN 'Yes'
+        ELSE 'No'
+    	END AS belongs_to_user
+		FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
+		ORDER BY %s %s limit %d offset %d`, userId, sellingListTable, userSellingTable, order, sortby, limit, offset)
 	}
+	//SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM sellingListTables sl LEFT JOIN userSellingTable ul on sl.id = ul.list_id AND SELECT ul.user_id LEFT JOIN userSellingTable on ul.user_id=1;
 	row, err := r.pg.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -75,7 +83,7 @@ func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page in
 		if userId == 0 {
 			err = row.Scan(&k.Id, &k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price, &k.UserLogin)
 		} else {
-			err = row.Scan(&k.Id, &k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price, &k.UserLogin)
+			err = row.Scan(&k.Title, &k.Description, &k.Date, &k.PicURL, &k.Price, &k.UserLogin, &k.Id, &k.Belongs)
 		}
 		if err != nil {
 			return nil, err

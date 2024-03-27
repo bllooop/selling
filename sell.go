@@ -10,6 +10,7 @@ type SellingList struct {
 	Price       int         `json:"price" db:"price"`
 	Date        pgtype.Date `json:"date"`
 	UserLogin   string      `json:"user_created,omitempty"`
+	Belongs     string      `json:"belongs,omitempty"`
 }
 
 type SellingListUnathorized struct {
