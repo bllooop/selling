@@ -36,10 +36,6 @@ func (h *Handler) createSellinglist(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getAllSelling(w http.ResponseWriter, r *http.Request) {
 	order := r.URL.Query().Get("order")
 	sortby := r.URL.Query().Get("sortby")
-	if sortby == "" && order == "" {
-		clientErr(w, http.StatusBadRequest, "invalid sortby or order value")
-		return
-	}
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		clientErr(w, http.StatusBadRequest, "invalid page value")

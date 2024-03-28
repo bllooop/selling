@@ -56,6 +56,10 @@ func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page in
 	offset := limit * (page - 1)
 	data["Page"] = r.pagination("users", limit, page)
 	var lists []selling.SellingList
+	if order == "" && sortby == "" {
+		order = "date"
+		sortby = "desc"
+	}
 	query := ""
 	if userId == 0 {
 		query = fmt.Sprintf(`SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login 
@@ -71,7 +75,6 @@ func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page in
 		FROM %s sl LEFT JOIN %s ul on sl.id = ul.list_id 
 		ORDER BY %s %s limit %d offset %d`, userId, sellingListTable, userSellingTable, order, sortby, limit, offset)
 	}
-	//SELECT sl.id, sl.title, sl.description, sl.date, sl.url, sl.price, ul.user_login FROM sellingListTables sl LEFT JOIN userSellingTable ul on sl.id = ul.list_id AND SELECT ul.user_id LEFT JOIN userSellingTable on ul.user_id=1;
 	row, err := r.pg.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
