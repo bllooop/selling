@@ -18,9 +18,9 @@ func NewAuthPostgres(pg *pgxpool.Pool) *AuthPostgres {
 
 func (r *AuthPostgres) CreateUser(user selling.User) (selling.User, error) {
 	var res selling.User
-	query := fmt.Sprintf(`INSERT INTO %s (username,password) VALUES ($1,$2) RETURNING *`, userListTable)
+	query := fmt.Sprintf(`INSERT INTO %s (username,password) VALUES ($1,$2) RETURNING id, username`, userListTable)
 	row := r.pg.QueryRow(context.Background(), query, user.Username, user.Password)
-	if err := row.Scan(&res.Id, &res.Username, &res.Password); err != nil {
+	if err := row.Scan(&res.Id, &res.Username); err != nil {
 		return res, err
 	}
 	return res, nil
