@@ -15,3 +15,5 @@ make migrate
 ```
 Для создания таблиц необходим инструмент golang-migrate.
 Для маршрутизации использовался фреймворк gorilla/mux, для базы данных драйвер pgx.
+
+sellings?order=1&sortby=name&page=1
