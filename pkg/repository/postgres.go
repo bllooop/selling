@@ -14,10 +14,10 @@ const (
 )
 
 const (
-	host = "db"   //comment when starting on local without docker-compose
-	port = "5432" //comment when starting on local without docker-compose
-	//host     = "localhost" //uncomment when starting on local without docker-compose
-	//port     = "5433" //uncomment when starting on local without docker-compose
+	//host = "db"   //comment when starting on local without docker-compose
+	//port = "5432" //comment when starting on local without docker-compose
+	host     = "localhost" //uncomment when starting on local without docker-compose
+	port     = "5433"      //uncomment when starting on local without docker-compose
 	user     = "postgres"
 	dbname   = "postgres"
 	sslmode  = "disable"

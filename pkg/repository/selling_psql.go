@@ -53,12 +53,17 @@ func (r *SellingPostgres) CreateSelling(userId int, list selling.SellingList) (s
 func (r *SellingPostgres) ListSellings(userId int, order, sortby string, page int) (map[string]interface{}, error) {
 	data := map[string]interface{}{}
 	limit := 10
+	if page == 0 || page < 0 {
+		page = 1
+	}
 	offset := limit * (page - 1)
 	data["Page"] = r.pagination("users", limit, page)
 	var lists []selling.SellingList
-	if order == "" && sortby == "" {
+	if order == "" {
 		order = "date"
-		sortby = "desc"
+	}
+	if sortby == "" {
+		order = "desc"
 	}
 	query := ""
 	if userId == 0 {
