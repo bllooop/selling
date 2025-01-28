@@ -9,6 +9,7 @@ import (
 	"selling/pkg/repository"
 	"selling/pkg/service"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 )
@@ -18,6 +19,12 @@ func main() {
 	addr := flag.String("addr", port, "web-server address")
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	if err := initConfig(); err != nil {
+		errorLog.Fatal(err)
+	}
+	if err := godotenv.Load(); err != nil {
+		errorLog.Fatal(err)
+	}
 	dbpool, err := repository.NewPostgresDB(repository.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
@@ -38,4 +45,10 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+}
+
+func initConfig() error {
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+	return viper.ReadInConfig()
 }
