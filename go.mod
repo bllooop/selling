@@ -2,7 +2,6 @@ module selling
 
 go 1.21
 
-toolchain go1.22.3
 
 require github.com/jackc/pgtype v1.14.3
 

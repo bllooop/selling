@@ -20,10 +20,10 @@ func (s *SellingService) CreateSelling(userId int, list selling.SellingList) (se
 }
 
 func (s *SellingService) ListSellings(userId int, order, sortby string, page int) (map[string]interface{}, error) {
-	if strings.ToLower(order) != "title" || strings.ToLower(order) != "price" || strings.ToLower(order) != "date" {
+	if strings.ToLower(order) != "title" && strings.ToLower(order) != "price" && strings.ToLower(order) != "date" {
 		return nil, errors.New("order type is incorrect, choose either title, price, date")
 	}
-	if strings.ToLower(sortby) != "asc" || strings.ToLower(sortby) != "desc" {
+	if strings.ToLower(sortby) != "asc" && strings.ToLower(sortby) != "desc" {
 		return nil, errors.New("sort type is incorrect, choose either asc or desc")
 	}
 	return s.repo.ListSellings(userId, order, sortby, page)
